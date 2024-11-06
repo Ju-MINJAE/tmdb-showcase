@@ -3,7 +3,7 @@ import movieData from '../data/movieListData.json';
 import MovieCard from './MovieCard';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, A11y } from 'swiper/modules';
+import { Navigation, Pagination, A11y, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -16,11 +16,16 @@ const MovieList: React.FC = () => {
         영화 목록
       </h2>
       <Swiper
-        modules={[Navigation, Pagination, A11y]}
+        modules={[Navigation, Pagination, A11y, Autoplay]}
         spaceBetween={20}
         slidesPerView={1}
+        loop
         navigation
-        pagination={{ clickable: true }}
+        autoplay={{
+          delay: 3000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        }}
         breakpoints={{
           640: {
             slidesPerView: 2,

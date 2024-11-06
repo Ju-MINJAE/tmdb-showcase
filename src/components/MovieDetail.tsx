@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import movieDetailData from '../data/movieDetailData.json';
 import { Star, Calendar, Clock } from 'lucide-react';
@@ -55,12 +53,14 @@ export default function Component() {
               />
             </div>
             <div className="md:w-2/3 p-6">
-              <h2 className="text-3xl font-bold mb-4">{movieData.title}</h2>
-              <div className="flex items-center mb-4">
-                <Star className="text-yellow-400 mr-2" />
-                <span className="text-xl">
-                  {movieData.vote_average.toFixed(1)}
-                </span>
+              <div className="flex justify-between mb-4">
+                <h2 className="text-3xl font-bold">{movieData.title}</h2>
+                <div className="flex">
+                  <Star className="text-yellow-400 mr-2 fill-yellow-400" />
+                  <span className="text-xl">
+                    {movieData.vote_average.toFixed(1)}
+                  </span>
+                </div>
               </div>
               <p className="text-xl italic mb-6">
                 &quot;{movieData.tagline}&quot;
