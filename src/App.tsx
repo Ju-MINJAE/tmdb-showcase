@@ -1,9 +1,15 @@
-function App() {
+import React from 'react';
+import { Route, Routes } from 'react-router-dom';
+import MovieDetail from './components/MovieDetail';
+import MovieList from './components/MovieList';
+
+const App: React.FC = () => {
   return (
-    <>
-      <h1>hello</h1>
-    </>
+    <Routes>
+      <Route path="/" element={<MovieList />} />
+      <Route path="/movie-detail" element={<MovieDetail />} />
+    </Routes>
   );
-}
+};
 
 export default App;
