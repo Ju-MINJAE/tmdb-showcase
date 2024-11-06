@@ -1,3 +1,5 @@
+import { Star } from 'lucide-react';
+
 interface MovieCardProps {
   title: string;
   posterPath: string;
@@ -12,14 +14,23 @@ const MovieCard: React.FC<MovieCardProps> = ({
   voteAverage,
 }) => {
   return (
-    <div className="w-40 bg-white rounded-lg shadow-md p-3 transform transition-transform duration-200 hover:scale-105">
+    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl">
       <img
         src={`${BASE_URL}${posterPath}`}
         alt={title}
-        className="w-full h-52 object-cover rounded-md mb-3"
+        className="w-full h-64 object-cover"
       />
-      <h3 className="text-md font-semibold text-gray-800 mb-1">{title}</h3>
-      <p className="text-xs text-gray-600">평점: {voteAverage} / 10</p>
+      <div className="p-4">
+        <h3 className="text-lg font-semibold text-white mb-2 truncate">
+          {title}
+        </h3>
+        <div className="flex items-center">
+          <Star className="text-yellow-400 mr-1" size={16} />
+          <span className="text-sm text-gray-300">
+            {voteAverage.toFixed(1)} / 10
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

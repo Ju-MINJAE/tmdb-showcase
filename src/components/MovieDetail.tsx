@@ -1,73 +1,103 @@
-// import movieDetailData from '../data/movieDetailData.json';
+'use client';
 
-// const BASE_URL = 'https://image.tmdb.org/t/p/w500';
+import { useEffect, useState } from 'react';
+import movieDetailData from '../data/movieDetailData.json';
+import { Star, Calendar, Clock } from 'lucide-react';
 
-// const MovieDetail = () => {
-//   const { backdrop_path, poster_path, title, vote_average, genres, overview } =
-//     movieDetailData;
+const BASE_URL = 'https://image.tmdb.org/t/p/original';
 
-//   return (
-//     <div className="p-8 bg-gray-100 min-h-screen">
-//       <div
-//         className="w-full h-64 bg-cover bg-center mb-8 rounded-lg shadow-md"
-//         style={{
-//           backgroundImage: `url(${BASE_URL}${backdrop_path || poster_path})`,
-//         }}
-//       ></div>
+export default function Component() {
+  const [movieData, setMovieData] = useState<any>(null);
 
-//       <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-//         <h1 className="text-3xl font-bold mb-4">{title}</h1>
-//         <p className="text-lg font-semibold text-yellow-500 mb-4">
-//           평점: {vote_average} / 10
-//         </p>
+  useEffect(() => {
+    const DetailData = {
+      backdrop_path: movieDetailData.backdrop_path,
+      title: movieDetailData.title,
+      vote_average: movieDetailData.vote_average,
+      genres: movieDetailData.genres,
+      overview: movieDetailData.overview,
+      tagline: movieDetailData.tagline,
+      release_date: movieDetailData.release_date,
+      runtime: movieDetailData.runtime,
+      poster_path: movieDetailData.poster_path,
+    };
 
-//         <div className="flex flex-wrap gap-2 mb-4">
-//           {genres.map((genre) => (
-//             <span
-//               key={genre.id}
-//               className="text-sm font-medium bg-gray-200 px-3 py-1 rounded-full"
-//             >
-//               {genre.name}
-//             </span>
-//           ))}
-//         </div>
+    setMovieData(DetailData);
+  }, []);
 
-//         <p className="text-gray-700 text-base leading-relaxed">{overview}</p>
-//       </div>
-//     </div>
-//   );
-// };
+  if (!movieData)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
 
-// export default MovieDetail;
-
-const MovieDetail = () => {
   return (
-    <div className="container mx-auto p-4 md:p-8 border-2 border-gray-300">
-      <h1 className="text-3xl font-bold mb-6 text-center border-b-2 border-gray-300">
-        영화 상세정보
-      </h1>
-
-      <div className="overflow-hidden border-2 border-gray-300">
-        <div className="p-0">
+    <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-30 blur-sm"
+        style={{
+          backgroundImage: `url(${BASE_URL}${movieData.backdrop_path})`,
+          animation: 'slowPan 60s linear infinite alternate',
+        }}
+      />
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8 text-center">
+          {movieData.title} 상세정보
+        </h1>
+        <div className="bg-gray-900 bg-opacity-80 rounded-lg overflow-hidden shadow-2xl">
           <div className="md:flex">
-            <div className="md:w-1/3 border-2 border-gray-300 p-4">이미지</div>
-            <div className="md:w-2/3 p-6 border-2 border-gray-300">
-              <h2 className="text-2xl font-bold mb-2 border-b-2 border-gray-300">
-                영화제목
-              </h2>
-              <div className="flex items-center mb-4 border-b-2 border-gray-300">
-                <span className="text-lg">평점</span>
+            <div className="md:w-1/3 p-6">
+              <img
+                src={`${BASE_URL}${movieData.poster_path}`}
+                alt={movieData.title}
+                className="w-full h-auto object-cover rounded-lg shadow-lg"
+              />
+            </div>
+            <div className="md:w-2/3 p-6">
+              <h2 className="text-3xl font-bold mb-4">{movieData.title}</h2>
+              <div className="flex items-center mb-4">
+                <Star className="text-yellow-400 mr-2" />
+                <span className="text-xl">
+                  {movieData.vote_average.toFixed(1)}
+                </span>
               </div>
-              <h3 className="text-xl font-semibold mb-2 border-b-2 border-gray-300">
-                줄거리
-              </h3>
-              <p className="text-gray-700">줄거리 주저리주저리</p>
+              <p className="text-xl italic mb-6">
+                &quot;{movieData.tagline}&quot;
+              </p>
+              <div className="mb-6">
+                <h3 className="text-2xl font-semibold mb-2">장르</h3>
+                <div className="flex flex-wrap gap-2">
+                  {movieData.genres.map(
+                    (genre: { name: string }, index: number) => (
+                      <span
+                        key={index}
+                        className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm"
+                      >
+                        {genre.name}
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
+              <div className="mb-6">
+                <h3 className="text-2xl font-semibold mb-2">줄거리</h3>
+                <p className="text-gray-300">{movieData.overview}</p>
+              </div>
+              <div className="flex justify-between text-sm">
+                <div className="flex items-center">
+                  <Calendar className="mr-2" />
+                  <span>개봉일: {movieData.release_date}</span>
+                </div>
+                <div className="flex items-center">
+                  <Clock className="mr-2" />
+                  <span>상영 시간: {movieData.runtime}분</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default MovieDetail;
+}
