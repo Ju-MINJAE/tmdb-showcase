@@ -13,7 +13,7 @@ const MovieList: React.FC = () => {
   return (
     <div className="bg-gradient-to-r from-gray-900 to-gray-800 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <h2 className="text-4xl font-bold mb-8 text-center text-white">
-        영화 목록
+        현재 상영중
       </h2>
       <Swiper
         modules={[Navigation, Pagination, A11y, Autoplay]}
@@ -54,6 +54,23 @@ const MovieList: React.FC = () => {
           </SwiperSlide>
         ))}
       </Swiper>
+      <hr className="mt-6" />
+      <div className="bg-gradient-to-r from-gray-900 to-gray-800 min-h-screen py-6 px-4 sm:px-6 lg:px-8">
+        <h2 className="text-4xl font-bold mb-8 text-center text-white">
+          영화 목록
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {movieData.results.map((movie) => (
+            <Link to={`/movie-detail/${movie.id}`} key={movie.id}>
+              <MovieCard
+                title={movie.title}
+                posterPath={movie.poster_path}
+                voteAverage={movie.vote_average}
+              />
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
