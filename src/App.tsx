@@ -1,14 +1,22 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import MovieDetail from './components/MovieDetail';
-import MovieList from './components/MovieList';
+import Nav from './components/Nav';
+import MovieDetail from './pages/MovieDetail';
+import MovieList from './pages/MovieList';
+import Signup from './pages/Signup';
+import Signin from './pages/Signin';
 
 const App: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={<MovieList />} />
-      <Route path="/movie-detail/:id" element={<MovieDetail />} />
-    </Routes>
+    <div>
+      <Nav />
+      <Routes>
+        <Route path="/" element={<MovieList />} />
+        <Route path="/movie-detail/:id" element={<MovieDetail />} />
+        <Route path="/signin" element={<Signin />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+    </div>
   );
 };
 
