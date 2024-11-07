@@ -25,7 +25,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           {title}
         </h3>
         <div className="flex items-center">
-          <Star className="text-yellow-400 mr-1" size={16} />
+          <Star className="text-yellow-400 fill-yellow-400 mr-1" size={16} />
           <span className="text-sm text-gray-300">
             {voteAverage.toFixed(1)} / 10
           </span>

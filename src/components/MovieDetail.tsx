@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import movieDetailData from '../data/movieDetailData.json';
 import { Star, Calendar, Clock } from 'lucide-react';
 
-const BASE_URL = 'https://image.tmdb.org/t/p/original';
+const BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 export default function Component() {
   const [movieData, setMovieData] = useState<any>(null);
@@ -72,7 +72,7 @@ export default function Component() {
                     (genre: { name: string }, index: number) => (
                       <span
                         key={index}
-                        className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm"
+                        className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm border-2 border-white"
                       >
                         {genre.name}
                       </span>
@@ -84,7 +84,8 @@ export default function Component() {
                 <h3 className="text-2xl font-semibold mb-2">줄거리</h3>
                 <p className="text-gray-300">{movieData.overview}</p>
               </div>
-              <div className="flex justify-between text-sm">
+              <hr />
+              <div className="flex justify-between text-sm mt-2">
                 <div className="flex items-center">
                   <Calendar className="mr-2" />
                   <span>개봉일: {movieData.release_date}</span>
