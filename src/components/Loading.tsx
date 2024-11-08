@@ -13,9 +13,16 @@ interface LoadingProps {
 
 const Loading: React.FC<LoadingProps> = ({ loading }) => {
   return (
-    <div>
-      <ClipLoader loading={loading} cssOverride={override} size={150} />
-      <p className="flex justify-center text-2xl">잠시 후에 다시 시도하세요.</p>
+    <div className="w-screen h-screen bg-gradient-to-r from-gray-900 to-gray-800 pt-10">
+      <ClipLoader
+        loading={loading}
+        cssOverride={override}
+        size={125}
+        color={'white'}
+      />
+      <p className="flex justify-center text-2xl text-white">
+        잠시 후에 다시 시도하세요.
+      </p>
     </div>
   );
 };

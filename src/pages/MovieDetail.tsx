@@ -24,7 +24,7 @@ const MovieDetail = () => {
     fetchMovieDetails();
   }, [id]);
 
-  if (!movieData) return <Loading loading={isLoading} />;
+  if (isLoading) return <Loading loading={isLoading} />;
 
   return (
     <div className="py-20 relative min-h-screen overflow-hidden bg-black text-white">

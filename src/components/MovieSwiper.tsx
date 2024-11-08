@@ -48,15 +48,12 @@ const MovieSwiper: React.FC<MovieSwiperProps> = ({ movies }) => {
       }}
     >
       {movies.map((movie) => (
-        <SwiperSlide
-          key={movie.id}
-          className="transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-        >
+        <SwiperSlide key={movie.id}>
           <Link to={`/movie-detail/${movie.id}`}>
             <img
               src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
               alt={movie.title}
-              className="w-full h-80 object-cover rounded-lg"
+              className="w-full h-80 object-cover rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl"
             />
             <div className="text-center mt-2 text-white">
               <p>{movie.title}</p>
