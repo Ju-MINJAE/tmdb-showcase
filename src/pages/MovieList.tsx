@@ -3,6 +3,7 @@ import { getPopularMovies, getTopRatedMovies } from '../api/api';
 import MovieCard from '../components/MovieCard';
 import MovieSwiper from '../components/MovieSwiper';
 import { Link } from 'react-router-dom';
+import TopButton from '../components/TopButton';
 
 interface Movie {
   id: number;
@@ -82,6 +83,7 @@ const MovieList: React.FC = () => {
           <p className="text-center text-white text-2xl">로딩중....</p>
         )}
       </div>
+      <TopButton />
     </div>
   );
 };
