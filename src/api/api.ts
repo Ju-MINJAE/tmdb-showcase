@@ -48,3 +48,19 @@ export const getMovieDetails = async (movieId: string) => {
     return null;
   }
 };
+
+export const getSearchMovies = async (query: string) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/search/movie`, {
+      params: {
+        api_key: API_KEY,
+        query: query,
+        language: 'ko-KR',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
