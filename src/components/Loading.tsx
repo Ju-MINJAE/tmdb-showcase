@@ -21,7 +21,7 @@ const Loading: React.FC<LoadingProps> = ({ loading }) => {
         color={'white'}
       />
       <p className="flex justify-center text-2xl text-white">
-        잠시 후에 다시 시도하세요.
+        영화 정보를 가져오고 있습니다. 잠시만 기다려주세요.
       </p>
     </div>
   );
