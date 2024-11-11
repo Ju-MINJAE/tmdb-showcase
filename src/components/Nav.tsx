@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Search } from 'lucide-react';
-import useDebounce from '../hooks/useDebounce';
-import { getSearchMovies } from '../api/api';
+import { Menu, X, Search, User } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useDebounce from '../hooks/useDebounce';
+import { getSearchMovies } from '../api/api';
+import { RootState } from '../RTK/authStore';
+import { logout } from '../RTK/authSlice';
 
 interface Movie {
   id: number;
@@ -14,13 +17,18 @@ interface Movie {
   release_date: any;
 }
 
-const Nav = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+export default function Nav() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 1000);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -34,12 +42,35 @@ const Nav = () => {
     fetchMovies();
   }, [debouncedSearchTerm]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleSearchClick = () => {
     if (!searchTerm) {
       return toast.warning('검색어를 입력하세요.');
     }
     navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
     setSearchTerm('');
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success('로그아웃 되었습니다.');
+    navigate('/');
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -73,18 +104,55 @@ const Nav = () => {
             </button>
           </div>
           <div className="hidden md:flex items-center space-x-1">
-            <Link
-              to="/signup"
-              className="py-2 px-4 text-white font-semibold hover:text-gray-200 hover:bg-[#435983] rounded-md transition duration-300"
-            >
-              회원가입
-            </Link>
-            <Link
-              to="/signin"
-              className="py-2 px-4 text-white font-semibold hover:text-gray-200 hover:bg-[#435983] rounded-md transition duration-300"
-            >
-              로그인
-            </Link>
+            {isAuthenticated ? (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center space-x-2 py-2 px-4 text-white font-semibold hover:text-gray-200 hover:bg-[#435983] rounded-md transition duration-300"
+                >
+                  <User className="w-8 h-8 p-1 bg-gray-300 rounded-full text-gray-600" />
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
+                    <Link
+                      to="/mypage"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      마이 페이지
+                    </Link>
+                    <Link
+                      to="/like"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      관심목록
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      로그아웃
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/signup"
+                  className="py-2 px-4 text-white font-semibold hover:text-gray-200 hover:bg-[#435983] rounded-md transition duration-300"
+                >
+                  회원가입
+                </Link>
+                <Link
+                  to="/signin"
+                  className="py-2 px-4 text-white font-semibold hover:text-gray-200 hover:bg-[#435983] rounded-md transition duration-300"
+                >
+                  로그인
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="md:hidden flex items-center">
@@ -105,20 +173,50 @@ const Nav = () => {
       {isOpen && (
         <div className="md:hidden fixed inset-0 bg-[#2c3d60] pt-16 h-[180px] z-30">
           <div className="flex flex-col items-center">
-            <Link
-              to="/signup"
-              className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
-              onClick={() => setIsOpen(false)}
-            >
-              회원가입
-            </Link>
-            <Link
-              to="/signin"
-              className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
-              onClick={() => setIsOpen(false)}
-            >
-              로그인
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/mypage"
+                  className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  마이 페이지
+                </Link>
+                <Link
+                  to="/like"
+                  className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  관심목록
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
+                >
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/signup"
+                  className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  회원가입
+                </Link>
+                <Link
+                  to="/signin"
+                  className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  로그인
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -154,6 +252,4 @@ const Nav = () => {
       )}
     </nav>
   );
-};
-
-export default Nav;
+}
