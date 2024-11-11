@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Search } from 'lucide-react';
 import useDebounce from '../hooks/useDebounce';
 import { getSearchMovies } from '../api/api';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Movie {
   id: number;
@@ -18,6 +20,8 @@ const Nav = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const debouncedSearchTerm = useDebounce(searchTerm, 1000);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchMovies = async () => {
       if (debouncedSearchTerm) {
@@ -30,31 +34,44 @@ const Nav = () => {
     fetchMovies();
   }, [debouncedSearchTerm]);
 
+  const handleSearchClick = () => {
+    if (!searchTerm) {
+      return toast.warning('검색어를 입력하세요.');
+    }
+    navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+    setSearchTerm('');
+  };
+
   return (
     <nav className="relative">
+      <ToastContainer
+        className="mt-12"
+        position="top-right"
+        limit={1}
+        autoClose={2000}
+      />
       <div className="w-full fixed top-0 left-0 right-0 bg-[#2c3d60] mx-auto px-4 z-40 shadow-md">
         <div className="flex items-center justify-between">
-          {/* 왼쪽 - 홈 */}
           <div className="flex space-x-7 items-center">
             <Link to="/" className="flex items-center py-4 px-2">
-              <span className="font-semibold text-white text-lg">홈</span>
+              <span className="font-semibold text-white text-2xl">홈</span>
             </Link>
-            <div className="relative">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-4 py-2 pr-10 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 w-64 text-gray-800 placeholder-gray-500"
-                placeholder="영화 검색..."
-              />
+          </div>
+          <div className="relative left-16">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-4 py-2 pr-10 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 w-64 text-gray-800 placeholder-gray-500"
+              placeholder="영화 검색"
+            />
+            <button onClick={handleSearchClick}>
               <Search
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                 size={20}
               />
-            </div>
+            </button>
           </div>
-
-          {/* 오른쪽 - 회원가입/로그인 */}
           <div className="hidden md:flex items-center space-x-1">
             <Link
               to="/signup"
