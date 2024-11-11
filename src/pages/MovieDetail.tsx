@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getMovieDetails } from '../api/api';
+import { getMovieDetails, getMovieCredits } from '../api/api';
 import { Star, Calendar, Clock } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import Loading from '../components/Loading';
@@ -9,6 +9,7 @@ const BASE_URL = import.meta.env.VITE_TMDB_IMG_URL;
 const MovieDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [movieData, setMovieData] = useState<any>(null);
+  const [credits, setCredits] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -17,6 +18,8 @@ const MovieDetail = () => {
         setIsLoading(true);
         const data = await getMovieDetails(id);
         setMovieData(data);
+        const creditsData = await getMovieCredits(id);
+        setCredits(creditsData);
         setIsLoading(false);
       }
     };
@@ -99,6 +102,37 @@ const MovieDetail = () => {
                   <span>상영 시간: {movieData.runtime}분</span>
                 </div>
               </div>
+              {credits && credits.cast && (
+                <div className="mt-8">
+                  <h3 className="text-2xl font-semibold mb-4">주요 출연진</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    {credits.cast.slice(0, 6).map((actor: any) => (
+                      <div
+                        key={actor.id}
+                        className="flex flex-col items-center"
+                      >
+                        <div className="w-24 h-24 mb-2 overflow-hidden rounded-full border-2 border-white">
+                          <img
+                            src={
+                              actor.profile_path
+                                ? `${BASE_URL}${actor.profile_path}`
+                                : '/placeholder.svg?height=96&width=96'
+                            }
+                            alt={actor.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="text-sm text-center font-medium">
+                          {actor.name}
+                        </span>
+                        <span className="text-xs text-center text-gray-400">
+                          {actor.character}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

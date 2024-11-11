@@ -49,6 +49,24 @@ export const getMovieDetails = async (movieId: string) => {
   }
 };
 
+export const getMovieCredits = async (movieId: string) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/movie/${movieId}/credits`,
+      {
+        params: {
+          api_key: API_KEY,
+          language: 'ko-KR',
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching movie credits: ', error);
+    return null;
+  }
+};
+
 export const getSearchMovies = async (query: string) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/search/movie`, {

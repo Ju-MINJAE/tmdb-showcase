@@ -16,7 +16,7 @@ interface Movie {
 
 const Nav = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [movies, setMovies] = useState<Movie[]>([]);
   const debouncedSearchTerm = useDebounce(searchTerm, 1000);
 
