@@ -39,9 +39,6 @@ const MovieDetail = () => {
         }}
       />
       <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* <h1 className="text-4xl font-bold mb-8 text-center">
-          {movieData.title} 상세정보
-        </h1> */}
         <div className="bg-gray-900 bg-opacity-80 rounded-lg overflow-hidden shadow-2xl">
           <div className="md:flex">
             <div className="md:w-1/3 p-6">

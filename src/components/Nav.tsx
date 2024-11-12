@@ -107,7 +107,6 @@ const Nav = () => {
                   className="flex items-center space-x-2 py-2 px-4 text-white font-semibold hover:text-gray-200 hover:bg-[#435983] rounded-md transition duration-300"
                 >
                   <User className="w-8 h-8 p-1 bg-gray-300 rounded-full text-gray-600" />
-                  <p>{user.nickname}</p>
                 </button>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">

@@ -1,43 +1,56 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { signUpSchema, SignUpFormData } from '../shemas/signupSchema';
 import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabase';
 import PasswordInput from '../components/PasswordInput';
 import Input from '../components/Input';
 
 const Signup = () => {
-  const [name, setName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-
   const navigate = useNavigate();
 
-  const signUpNewUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
-    if (password !== confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
-      return;
-    }
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: name,
-          nickname: name,
+  const onSubmit = async (data: SignUpFormData) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            display_name: data.name,
+            nickname: data.name,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      setError(error.message);
-      return;
-    } else {
+      if (error) {
+        setError('root', {
+          type: 'server',
+          message: error.message,
+        });
+        return;
+      }
+
       navigate('/signin');
+    } catch (error) {
+      setError('root', {
+        type: 'server',
+        message: '회원가입 중 오류가 발생했습니다.',
+      });
     }
   };
 
@@ -49,48 +62,57 @@ const Signup = () => {
             회원가입
           </h1>
         </div>
-        <form onSubmit={signUpNewUser}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="space-y-4">
-            <Input
-              id="name"
-              label="이름"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <div>
+              <Input
+                id="name"
+                label="이름"
+                type="text"
+                error={errors.name?.message}
+                {...register('name')}
+              />
+            </div>
 
-            <Input
-              id="email"
-              label="이메일"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <div>
+              <Input
+                id="email"
+                label="이메일"
+                type="email"
+                error={errors.email?.message}
+                {...register('email')}
+              />
+            </div>
 
-            <PasswordInput
-              id="password"
-              label="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={error}
-            />
+            <div>
+              <PasswordInput
+                id="password"
+                label="비밀번호"
+                error={errors.password?.message}
+                {...register('password')}
+              />
+            </div>
 
-            <PasswordInput
-              id="confirmPassword"
-              label="비밀번호 확인"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              error={error}
-            />
+            <div>
+              <PasswordInput
+                id="confirmPassword"
+                label="비밀번호 확인"
+                error={errors.confirmPassword?.message}
+                {...register('confirmPassword')}
+              />
+            </div>
           </div>
 
-          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+          {errors.root && (
+            <p className="mt-4 text-sm text-red-600">{errors.root.message}</p>
+          )}
 
           <button
-            className="w-full mt-6 px-4 py-2 bg-[#28344a] text-white font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+            className="w-full mt-6 px-4 py-2 bg-[#28344a] text-white font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             type="submit"
+            disabled={isSubmitting}
           >
-            회원가입
+            {isSubmitting ? '처리중...' : '회원가입'}
           </button>
         </form>
 

@@ -1,58 +1,86 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { SignInFormData, signInSchema } from '../shemas/signinSchema';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import supabase from '../utils/supabase';
 import Input from '../components/Input';
 import PasswordInput from '../components/PasswordInput';
-import { useAuth } from '../contexts/AuthContext';
 
 const SignIn = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const showError = (message: string) => {
-    setError(message);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+    reset,
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const onSubmit = async (data: SignInFormData) => {
+    try {
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
+        setError('root', {
+          type: 'server',
+          message: '로그인 정보가 올바르지 않습니다.',
+        });
+        return;
+      }
+
+      if (authData?.session) {
+        const user = {
+          email: authData.user.email ?? '',
+          nickname: authData.user.user_metadata?.nickname ?? '사용자',
+          id: authData?.user.id,
+        };
+        login(user);
+        reset();
+        navigate('/');
+      }
+    } catch (error) {
+      setError('root', {
+        type: 'server',
+        message: '로그인 중 오류가 발생했습니다.',
+      });
+    }
   };
 
-  const signIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      showError('로그인 정보가 올바르지 않습니다.');
-      return;
-    }
-    if (data?.session) {
-      const user = {
-        email: data.user.email ?? '',
-        nickname: data.user.user_metadata?.nickname ?? '사용자',
-      };
-      login(user);
-    }
-    navigate('/');
-  };
-
-  const signInWithKakao = async (e: React.MouseEvent) => {
+  const signInWithKakao = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'kakao',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'kakao',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
 
-    if (error) {
-      showError('카카오 로그인에 실패했습니다.');
-      console.error('Kakao login error:', error);
+      if (error) {
+        setError('root', {
+          type: 'server',
+          message: '카카오 로그인에 실패했습니다.',
+        });
+        console.error('Kakao login error:', error);
+      }
+    } catch (error) {
+      setError('root', {
+        type: 'server',
+        message: '카카오 로그인 중 오류가 발생했습니다.',
+      });
     }
   };
 
@@ -64,46 +92,65 @@ const SignIn = () => {
             로그인
           </h1>
         </div>
-        <div>
-          <form onSubmit={signIn}>
-            <div className="space-y-4">
-              <Input
-                id="email"
-                label="이메일"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <PasswordInput
-                id="password"
-                label="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                error={error}
-              />
-            </div>
 
-            <button
-              className="w-full mt-6 px-4 py-2 bg-[#28344a] text-white font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
-              type="submit"
-            >
-              로그인
-            </button>
-          </form>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="space-y-4">
+            <Input
+              id="email"
+              label="이메일"
+              type="email"
+              error={errors.email?.message}
+              {...register('email')}
+            />
+            <PasswordInput
+              id="password"
+              label="비밀번호"
+              error={errors.password?.message}
+              {...register('password')}
+            />
+          </div>
+
+          {errors.root && (
+            <p className="mt-4 text-sm text-red-600" role="alert">
+              {errors.root.message}
+            </p>
+          )}
+
           <button
-            onClick={signInWithKakao}
-            className="w-full mt-4 px-4 py-2 bg-yellow-400 text-black font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+            className="w-full mt-6 px-4 py-2 bg-[#28344a] text-white font-semibold rounded-md shadow-sm 
+              focus:outline-none focus:ring-2 focus:ring-offset-2 
+              disabled:opacity-50 disabled:cursor-not-allowed
+              hover:bg-[#1f2937] transition-colors"
+            type="submit"
+            disabled={isSubmitting}
           >
-            카카오 로그인
+            {isSubmitting ? '로그인 중...' : '로그인'}
           </button>
-        </div>
+        </form>
+
+        <button
+          onClick={signInWithKakao}
+          className="w-full mt-4 px-4 py-2 bg-yellow-400 text-black font-semibold rounded-md shadow-sm 
+            focus:outline-none focus:ring-2 focus:ring-offset-2 
+            hover:bg-yellow-500 transition-colors
+            disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          카카오 로그인
+        </button>
+
         <div className="mt-6 flex flex-col space-y-2 text-center text-sm">
-          <Link to="/forgot-password" className="text-blue-600 hover:underline">
+          <Link
+            to="/forgot-password"
+            className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+          >
             비밀번호를 잊으셨나요?
           </Link>
           <div>
             계정이 없으신가요?{' '}
-            <Link to="/signup" className="text-blue-600 hover:underline">
+            <Link
+              to="/signup"
+              className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+            >
               회원가입
             </Link>
           </div>
