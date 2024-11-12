@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabase';
 import Input from '../components/Input';
 import PasswordInput from '../components/PasswordInput';
-import { useDispatch } from 'react-redux';
-import { login } from '../RTK/authSlice';
+import { useAuth } from '../contexts/AuthContext';
 
 const SignIn = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const showError = (message: string) => {
     setError(message);
@@ -31,50 +31,30 @@ const SignIn = () => {
       return;
     }
     if (data?.session) {
-      const nickname = data.user.user_metadata?.nickname ?? '사용자';
-      const userData = {
+      const user = {
         email: data.user.email ?? '',
-        nickname,
+        nickname: data.user.user_metadata?.nickname ?? '사용자',
       };
-      dispatch(login(userData));
-      localStorage.setItem('authUser', JSON.stringify(userData));
+      login(user);
     }
+    navigate('/');
   };
 
-  const signInWithKakao = async () => {
+  const signInWithKakao = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'kakao',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
     if (error) {
-      console.error('Kakao 로그인 오류:', error.message);
-      return;
+      showError('카카오 로그인에 실패했습니다.');
+      console.error('Kakao login error:', error);
     }
   };
-
-  useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const userData = {
-          email: session.user.email ?? '',
-          nickname: session.user.user_metadata?.preferred_username ?? '사용자',
-        };
-
-        dispatch(login(userData));
-        localStorage.setItem('authUser', JSON.stringify(userData));
-        localStorage.setItem(
-          'auth-token',
-          JSON.stringify(session.access_token)
-        );
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [dispatch]);
 
   return (
     <div className="w-full mx-auto md:p-8 flex justify-center items-center min-h-screen bg-[#121a29]">
@@ -102,7 +82,7 @@ const SignIn = () => {
                 error={error}
               />
             </div>
-            {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
             <button
               className="w-full mt-6 px-4 py-2 bg-[#28344a] text-white font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
               type="submit"

@@ -28,6 +28,7 @@ const Signup = () => {
       options: {
         data: {
           display_name: name,
+          nickname: name,
         },
       },
     });

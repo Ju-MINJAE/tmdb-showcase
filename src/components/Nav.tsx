@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Search, User } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
-import { ToastContainer, toast } from 'react-toastify';
+import { useAuth } from '../contexts/AuthContext';
 import 'react-toastify/dist/ReactToastify.css';
 import useDebounce from '../hooks/useDebounce';
 import { getSearchMovies } from '../api/api';
-import { RootState } from '../RTK/authStore';
-import { logout } from '../RTK/authSlice';
+import { ToastContainer, toast } from 'react-toastify';
 
 interface Movie {
   id: number;
@@ -25,9 +23,7 @@ const Nav = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 1000);
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-
+  const { user, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,8 +63,7 @@ const Nav = () => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
-    dispatch(logout());
+    logout();
     toast.success('로그아웃 되었습니다.');
     navigate('/');
     setIsDropdownOpen(false);
@@ -105,13 +100,14 @@ const Nav = () => {
             </button>
           </div>
           <div className="hidden md:flex items-center space-x-1">
-            {isAuthenticated ? (
+            {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center space-x-2 py-2 px-4 text-white font-semibold hover:text-gray-200 hover:bg-[#435983] rounded-md transition duration-300"
                 >
                   <User className="w-8 h-8 p-1 bg-gray-300 rounded-full text-gray-600" />
+                  <p>{user.nickname}</p>
                 </button>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
@@ -167,15 +163,8 @@ const Nav = () => {
       {isOpen && (
         <div className="md:hidden fixed inset-0 bg-[#2c3d60] pt-16 h-[180px] z-30">
           <div className="flex flex-col items-center">
-            {isAuthenticated ? (
+            {user ? (
               <>
-                <Link
-                  to="/mypage"
-                  className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
-                  onClick={() => setIsOpen(false)}
-                >
-                  마이 페이지
-                </Link>
                 <Link
                   to="/like"
                   className="w-full text-center py-4 text-white font-semibold hover:bg-[#435983] transition duration-300"
