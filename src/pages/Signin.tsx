@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabase';
-import { Eye, EyeOff } from 'lucide-react';
+import Input from '../components/Input';
+import PasswordInput from '../components/PasswordInput';
 import { useDispatch } from 'react-redux';
 import { login } from '../RTK/authSlice';
 
 const SignIn = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const showError = (message: string) => {
+    setError(message);
+  };
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +28,11 @@ const SignIn = () => {
     });
 
     if (error) {
-      setError('로그인 정보가 올바르지 않습니다.');
+      showError('로그인 정보가 올바르지 않습니다.');
       return;
     }
-    if (data?.user) {
+    if (data?.session) {
+      localStorage.setItem('authToken', data.session.access_token);
       const nickname = data.user.user_metadata?.nickname ?? '사용자';
 
       dispatch(
@@ -39,6 +42,25 @@ const SignIn = () => {
         })
       );
       navigate('/');
+    }
+  };
+
+  const signInWithKakao = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'kakao',
+      });
+
+      console.log('응답 데이터:', data);
+      console.log('응답 오류:', error);
+
+      if (error) {
+        console.error('로그인 오류:', error.message);
+      } else {
+        console.log('로그인 성공:', data);
+      }
+    } catch (err) {
+      console.error('예상치 못한 오류:', err);
     }
   };
 
@@ -53,57 +75,20 @@ const SignIn = () => {
         <div>
           <form onSubmit={signIn}>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  이메일
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  required
-                  autoComplete="off"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  비밀번호
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-0 top-0 h-full px-3 py-2 text-gray-600 hover:text-gray-900"
-                    onClick={togglePasswordVisibility}
-                    aria-label={
-                      showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
+              <Input
+                id="email"
+                label="이메일"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <PasswordInput
+                id="password"
+                label="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={error}
+              />
             </div>
             {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
             <button
@@ -113,6 +98,12 @@ const SignIn = () => {
               로그인
             </button>
           </form>
+          <button
+            onClick={signInWithKakao}
+            className="w-full mt-4 px-4 py-2 bg-yellow-400 text-black font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+          >
+            카카오 로그인
+          </button>
         </div>
         <div className="mt-6 flex flex-col space-y-2 text-center text-sm">
           <Link to="/forgot-password" className="text-blue-600 hover:underline">

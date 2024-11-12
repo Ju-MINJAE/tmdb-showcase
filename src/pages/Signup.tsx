@@ -1,30 +1,24 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabase';
-import { Eye, EyeOff } from 'lucide-react';
+import PasswordInput from '../components/PasswordInput';
+import Input from '../components/Input';
 
 const Signup = () => {
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setConfirmShowPassword] =
-    useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
-
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
-  const toggleConfirmPasswordVisibility = () =>
-    setConfirmShowPassword(!showPassword);
 
   const signUpNewUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('비밀번호가 일치하기 않습니다.');
+      setError('비밀번호가 일치하지 않습니다.');
       return;
     }
 
@@ -41,7 +35,9 @@ const Signup = () => {
     if (error) {
       setError(error.message);
       return;
-    } else navigate('/signin');
+    } else {
+      navigate('/signin');
+    }
   };
 
   return (
@@ -54,111 +50,37 @@ const Signup = () => {
         </div>
         <form onSubmit={signUpNewUser}>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                이름
-              </label>
-              <input
-                id="name"
-                type="text"
-                placeholder="홍길동"
-                required
-                autoComplete="off"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            <Input
+              id="name"
+              label="이름"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                이메일
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                required
-                autoComplete="off"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+            <Input
+              id="email"
+              label="이메일"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                비밀번호
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <button
-                  type="button"
-                  className="absolute right-0 top-0 h-full px-3 py-2 text-gray-600 hover:text-gray-900"
-                  onClick={togglePasswordVisibility}
-                  aria-label={
-                    showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+            <PasswordInput
+              id="password"
+              label="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={error}
+            />
 
-            <div className="space-y-2">
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700"
-              >
-                비밀번호 확인
-              </label>
-              <div className="relative">
-                <input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <button
-                  type="button"
-                  className="absolute right-0 top-0 h-full px-3 py-2 text-gray-600 hover:text-gray-900"
-                  onClick={toggleConfirmPasswordVisibility}
-                  aria-label={
-                    showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 보기'
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+            <PasswordInput
+              id="confirmPassword"
+              label="비밀번호 확인"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              error={error}
+            />
           </div>
 
           {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
