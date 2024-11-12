@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import supabase from '../utils/supabase';
 import Input from '../components/Input';
 import PasswordInput from '../components/PasswordInput';
@@ -11,7 +11,6 @@ const SignIn = () => {
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const showError = (message: string) => {
@@ -32,37 +31,50 @@ const SignIn = () => {
       return;
     }
     if (data?.session) {
-      localStorage.setItem('authToken', data.session.access_token);
       const nickname = data.user.user_metadata?.nickname ?? '사용자';
-
-      dispatch(
-        login({
-          email: data.user.email ?? '',
-          nickname,
-        })
-      );
-      navigate('/');
+      const userData = {
+        email: data.user.email ?? '',
+        nickname,
+      };
+      dispatch(login(userData));
+      localStorage.setItem('authUser', JSON.stringify(userData));
     }
   };
 
   const signInWithKakao = async () => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'kakao',
-      });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+    });
 
-      console.log('응답 데이터:', data);
-      console.log('응답 오류:', error);
-
-      if (error) {
-        console.error('로그인 오류:', error.message);
-      } else {
-        console.log('로그인 성공:', data);
-      }
-    } catch (err) {
-      console.error('예상치 못한 오류:', err);
+    if (error) {
+      console.error('Kakao 로그인 오류:', error.message);
+      return;
     }
   };
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const userData = {
+          email: session.user.email ?? '',
+          nickname: session.user.user_metadata?.preferred_username ?? '사용자',
+        };
+
+        dispatch(login(userData));
+        localStorage.setItem('authUser', JSON.stringify(userData));
+        localStorage.setItem(
+          'auth-token',
+          JSON.stringify(session.access_token)
+        );
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [dispatch]);
 
   return (
     <div className="w-full mx-auto md:p-8 flex justify-center items-center min-h-screen bg-[#121a29]">

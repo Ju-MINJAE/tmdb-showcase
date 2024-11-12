@@ -67,7 +67,7 @@ const Nav = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
+    localStorage.clear();
     dispatch(logout());
     toast.success('로그아웃 되었습니다.');
     navigate('/');
